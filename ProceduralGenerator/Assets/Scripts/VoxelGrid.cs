@@ -52,6 +52,10 @@
         /// </summary>
         private List<int> triangles;
 
+        public VoxelGrid xNeighbor, yNeighbor, xyNeighbor;
+        private float gridSize;
+        private Voxel dummyX, dummyY, dummyT;
+
         /// <summary>
         /// Initialize the voxel grid.
         /// </summary>
@@ -61,9 +65,14 @@
         {
             // Initialize the grid data.
             this.resolution = resolution;
+            gridSize = size;
             voxelSize = size / resolution;
             voxels = new Voxel[resolution * resolution];
             voxelMaterials = new Material[voxels.Length];
+
+            dummyX = new Voxel();
+            dummyY = new Voxel();
+            dummyT = new Voxel();
 
             // Create the voxel game objects.
             for (int i = 0, y = 0; y < resolution; y++)
@@ -100,29 +109,11 @@
         }
 
         /// <summary>
-        /// Set the voxel state and update their colours.
-        /// </summary>
-        /// <param name="x">Voxel x-coordinate.</param>
-        /// <param name="y">Voxel y-coordinate.</param>
-        /// <param name="state">The new state of the voxel.</param>
-        public void SetVoxel(int x, int y, bool state)
-        {
-            voxels[y * resolution + x].state = state;
-            Refresh();
-        }
-
-        /// <summary>
         /// Set the colours of the voxels dpeending on their state.
         /// </summary>
         private void Refresh()
         {
-            // Set the material colours.
-            for (int i = 0; i < voxels.Length; i++)
-            {
-                voxelMaterials[i].color = voxels[i].state ? Color.black : Color.white;
-            }
-
-            // Generate the mesh.
+            SetVoxelColors();
             Triangulate();
         }
 
@@ -131,15 +122,20 @@
         /// </summary>
         private void Triangulate()
         {
-            // Clear previous mesh data.
             vertices.Clear();
             triangles.Clear();
             mesh.Clear();
 
-            // Generate the mesh.
+            if (xNeighbor != null)
+            {
+                dummyX.BecomeXDummyOf(xNeighbor.voxels[0], gridSize);
+            }
             TriangulateCellRows();
+            if (yNeighbor != null)
+            {
+                TriangulateGapRow();
+            }
 
-            // Set the newly generated mesh.
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
         }
@@ -160,6 +156,41 @@
                         voxels[i + resolution],
                         voxels[i + resolution + 1]);
                 }
+                if (xNeighbor != null)
+                {
+                    TriangulateGapCell(i);
+                }
+            }
+        }
+
+        private void TriangulateGapCell(int i)
+        {
+            Voxel dummySwap = dummyT;
+            dummySwap.BecomeXDummyOf(xNeighbor.voxels[i + 1], gridSize);
+            dummyT = dummyX;
+            dummyX = dummySwap;
+            TriangulateCell(voxels[i], dummyT, voxels[i + resolution], dummyX);
+        }
+
+        private void TriangulateGapRow()
+        {
+            dummyY.BecomeYDummyOf(yNeighbor.voxels[0], gridSize);
+            int cells = resolution - 1;
+            int offset = cells * resolution;
+
+            for (int x = 0; x < cells; x++)
+            {
+                Voxel dummySwap = dummyT;
+                dummySwap.BecomeYDummyOf(yNeighbor.voxels[x + 1], gridSize);
+                dummyT = dummyY;
+                dummyY = dummySwap;
+                TriangulateCell(voxels[x + offset], voxels[x + offset + 1], dummyT, dummyY);
+            }
+
+            if (xNeighbor != null)
+            {
+                dummyT.BecomeXYDummyOf(xyNeighbor.voxels[0], gridSize);
+                TriangulateCell(voxels[voxels.Length - 1], dummyX, dummyY, dummyT);
             }
         }
 
@@ -349,6 +380,48 @@
             triangles.Add(vertexIndex);
             triangles.Add(vertexIndex + 3);
             triangles.Add(vertexIndex + 4);
+        }
+
+        private void SetVoxelColors()
+        {
+            for (int i = 0; i < voxels.Length; i++)
+            {
+                voxelMaterials[i].color = voxels[i].state ? Color.black : Color.white;
+            }
+        }
+
+        public void Apply(VoxelStencil stencil)
+        {
+            int xStart = stencil.XStart;
+            if (xStart < 0)
+            {
+                xStart = 0;
+            }
+            int xEnd = stencil.XEnd;
+            if (xEnd >= resolution)
+            {
+                xEnd = resolution - 1;
+            }
+            int yStart = stencil.YStart;
+            if (yStart < 0)
+            {
+                yStart = 0;
+            }
+            int yEnd = stencil.YEnd;
+            if (yEnd >= resolution)
+            {
+                yEnd = resolution - 1;
+            }
+
+            for (int y = yStart; y <= yEnd; y++)
+            {
+                int i = y * resolution + xStart;
+                for (int x = xStart; x <= xEnd; x++, i++)
+                {
+                    voxels[i].state = stencil.Apply(x, y, voxels[i].state);
+                }
+            }
+            Refresh();
         }
     }
 }

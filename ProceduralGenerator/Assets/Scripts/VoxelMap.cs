@@ -98,6 +98,19 @@
             chunk.transform.parent = transform;
             chunk.transform.localPosition = new Vector3(x * chunkSize - halfSize, y * chunkSize - halfSize);
             chunks[i] = chunk;
+
+            if (x > 0)
+            {
+                chunks[i - 1].xNeighbor = chunk;
+            }
+            if (y > 0)
+            {
+                chunks[i - chunkResolution].yNeighbor = chunk;
+                if (x > 0)
+                {
+                    chunks[i - chunkResolution - 1].xyNeighbor = chunk;
+                }
+            }
         }
 
         /// <summary>
@@ -124,18 +137,46 @@
         /// <param name="point">The point which was touched.</param>
         private void EditVoxels(Vector3 point)
         {
-            // Determine which voxel was touched.
-            int voxelX = (int)((point.x + halfSize) / voxelSize);
-            int voxelY = (int)((point.y + halfSize) / voxelSize);
-            int chunkX = voxelX / voxelResolution;
-            int chunkY = voxelY / voxelResolution;
-            Debug.Log(voxelX + ", " + voxelY + " in chunk " + chunkX + ", " + chunkY);
+            int centerX = (int)((point.x + halfSize) / voxelSize);
+            int centerY = (int)((point.y + halfSize) / voxelSize);
 
-            voxelX -= chunkX * voxelResolution;
-            voxelY -= chunkY * voxelResolution;
+            int xStart = (centerX - 1) / voxelResolution;
+            if (xStart < 0)
+            {
+                xStart = 0;
+            }
+            int xEnd = (centerX) / voxelResolution;
+            if (xEnd >= chunkResolution)
+            {
+                xEnd = chunkResolution - 1;
+            }
+            int yStart = (centerY - 1) / voxelResolution;
+            if (yStart < 0)
+            {
+                yStart = 0;
+            }
+            int yEnd = (centerY) / voxelResolution;
+            if (yEnd >= chunkResolution)
+            {
+                yEnd = chunkResolution - 1;
+            }
 
-            // Set the state of the voxel.
-            chunks[chunkY * chunkResolution + chunkX].SetVoxel(voxelX, voxelY, true);
+            VoxelStencil activeStencil = new VoxelStencil();
+            activeStencil.Initialize(true, 0);
+
+            int voxelYOffset = yEnd * voxelResolution;
+            for (int y = yEnd; y >= yStart; y--)
+            {
+                int i = y * chunkResolution + xEnd;
+                int voxelXOffset = xEnd * voxelResolution;
+                for (int x = xEnd; x >= xStart; x--, i--)
+                {
+                    activeStencil.SetCenter(centerX - voxelXOffset, centerY - voxelYOffset);
+                    chunks[i].Apply(activeStencil);
+                    voxelXOffset -= voxelResolution;
+                }
+                voxelYOffset -= voxelResolution;
+            }
         }
     }
 }
