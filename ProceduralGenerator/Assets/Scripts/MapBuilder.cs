@@ -70,6 +70,9 @@
             {
                 map = SmoothMap();
             }
+
+            MeshGenerator meshGen = GetComponent<MeshGenerator>();
+            meshGen.GenerateMesh(map, 1);
         }
 
         /// <summary>
@@ -172,7 +175,7 @@
         /// </summary>
         private void OnDrawGizmos()
         {
-            if (map == null)
+            /*if (map == null)
             {
                 return;
             }
@@ -185,7 +188,7 @@
                     Vector3 pos = new Vector3(-width / 2 + x + 0.5f, -height / 2 + y + 0.5f);
                     Gizmos.DrawCube(pos, Vector3.one);
                 }
-            }
+            }*/
         }
     }
 }
