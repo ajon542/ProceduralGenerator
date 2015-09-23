@@ -1,6 +1,8 @@
-﻿namespace MapBuilder
+﻿
+namespace MapBuilder
 {
     using UnityEngine;
+    using System.Collections.Generic;
 
     public class MapBuilder : MonoBehaviour
     {
@@ -71,6 +73,8 @@
                 map = SmoothMap();
             }
 
+            ProcessMap();
+
             // Generate a border.
             int borderSize = 5;
             int[,] borderedMap = new int[width + borderSize * 2, height + borderSize * 2];
@@ -91,6 +95,105 @@
 
             MeshGenerator meshGen = GetComponent<MeshGenerator>();
             meshGen.GenerateMesh(borderedMap, 1);
+        }
+
+        private bool IsInMapRange(int x, int y)
+        {
+            return x >= 0 && x < width && y >= 0 && y < height;
+        }
+
+        private List<Coord> GetRegionTiles(int startX, int startY)
+        {
+            int tileType = map[startX, startY];
+            bool[,] visited = new bool[width, height];
+
+            List<Coord> tiles = new List<Coord>();
+
+            Queue<Coord> queue = new Queue<Coord>();
+            queue.Enqueue(new Coord(startX, startY));
+            visited[startX, startY] = true;
+
+            while (queue.Count > 0)
+            {
+                Coord tile = queue.Dequeue();
+                tiles.Add(tile);
+
+                for (int x = tile.x - 1; x <= tile.x + 1; ++x)
+                {
+                    for (int y = tile.y - 1; y <= tile.y + 1; ++y)
+                    {
+                        if (IsInMapRange(x, y) && (y == tile.y || x == tile.x))
+                        {
+                            if (visited[x, y] == false && map[x, y] == tileType)
+                            {
+                                visited[x, y] = true;
+                                queue.Enqueue(new Coord(x, y));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return tiles;
+        }
+
+        private List<List<Coord>> GetRegions(int tileType)
+        {
+            List<List<Coord>> regions = new List<List<Coord>>();
+            bool[,] visited = new bool[width, height];
+
+            for (int x = 0; x < width; ++x)
+            {
+                for (int y = 0; y < height; ++y)
+                {
+                    if (visited[x, y] == false && map[x, y] == tileType)
+                    {
+                        List<Coord> newRegion = GetRegionTiles(x, y);
+                        regions.Add(newRegion);
+
+                        foreach (Coord tile in newRegion)
+                        {
+                            visited[tile.x, tile.y] = true;
+                        }
+                    }
+                }
+            }
+
+            return regions;
+        }
+
+        private void ProcessMap()
+        {
+            List<List<Coord>> wallRegions = GetRegions(1);
+
+            // Remove wall regions.
+            // Any region made up of less than the threshold will be removed from the map.
+            int wallThresholdSize = 50;
+            foreach (List<Coord> wallRegion in wallRegions)
+            {
+                if (wallRegion.Count < wallThresholdSize)
+                {
+                    foreach (Coord tile in wallRegion)
+                    {
+                        map[tile.x, tile.y] = 0;
+                    }
+                }
+            }
+
+            // Remove room regions.
+            // Any region made up of less than the threshold will be removed from the map.
+            List<List<Coord>> roomRegions = GetRegions(0);
+            int roomThresholdSize = 50;
+            foreach (List<Coord> roomRegion in roomRegions)
+            {
+                if (roomRegion.Count < roomThresholdSize)
+                {
+                    foreach (Coord tile in roomRegion)
+                    {
+                        map[tile.x, tile.y] = 1;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -158,6 +261,18 @@
             return newMap;
         }
 
+        struct Coord
+        {
+            public readonly int x;
+            public readonly int y;
+
+            public Coord(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
         /// <summary>
         /// Get the count of neighbouring cells.
         /// </summary>
@@ -171,7 +286,7 @@
             {
                 for (int y = gridY - 1; y <= gridY + 1; ++y)
                 {
-                    if (x >= 0 && x < width && y >= 0 && y < height)
+                    if (IsInMapRange(x, y))
                     {
                         if (x != gridX || y != gridY)
                         {
