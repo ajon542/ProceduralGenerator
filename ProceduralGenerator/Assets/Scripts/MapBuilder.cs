@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MapBuilder
 {
     using UnityEngine;
@@ -202,11 +204,40 @@ namespace MapBuilder
                 }
             }
 
+            // Room graph must be connected.
+            survivingRooms.Sort();
+            survivingRooms[0].isMainRoom = true;
+            survivingRooms[0].isAccessibleFromMainRoom = true;
             ConnectClosestRooms(survivingRooms);
         }
 
-        private void ConnectClosestRooms(List<Room> allRooms)
+        private void ConnectClosestRooms(List<Room> allRooms, bool forceAccessibilityFromMainRoom = false)
         {
+            List<Room> roomListA = new List<Room>();
+            List<Room> roomListB = new List<Room>();
+
+            // Try to connect all the rooms in listA which aren't accessible from the main room
+            // to any of the rooms in listB which are accessible from the main room.
+            if (forceAccessibilityFromMainRoom)
+            {
+                foreach (Room room in allRooms)
+                {
+                    if (room.isAccessibleFromMainRoom)
+                    {
+                        roomListB.Add(room);
+                    }
+                    else
+                    {
+                        roomListA.Add(room);
+                    }
+                }
+            }
+            else
+            {
+                roomListA = allRooms;
+                roomListB = allRooms;
+            }
+
             int bestDistance = 0;
             Coord bestTileA = new Coord();
             Coord bestTileB = new Coord();
@@ -217,21 +248,22 @@ namespace MapBuilder
             bool possibleConnectionFound = false;
             
             // TODO: This has to be addressed in a more efficient manner...
-            foreach (Room roomA in allRooms)
+            foreach (Room roomA in roomListA)
             {
-                possibleConnectionFound = false;
-
-                foreach (Room roomB in allRooms)
+                if (!forceAccessibilityFromMainRoom)
                 {
-                    if (roomA == roomB)
+                    possibleConnectionFound = false;
+                    if (roomA.connectedRooms.Count > 0)
                     {
                         continue;
                     }
+                }
 
-                    if (roomA.IsConnected(roomB))
+                foreach (Room roomB in roomListB)
+                {
+                    if (roomA == roomB || roomA.IsConnected(roomB))
                     {
-                        possibleConnectionFound = false;
-                        break;
+                        continue;
                     }
 
                     for (int tileIndexA = 0; tileIndexA < roomA.edgeTiles.Count; ++tileIndexA)
@@ -255,10 +287,22 @@ namespace MapBuilder
                     }
                 }
 
-                if (possibleConnectionFound)
+                if (possibleConnectionFound && !forceAccessibilityFromMainRoom)
                 {
                     CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB);
                 }
+            }
+
+            if (possibleConnectionFound && forceAccessibilityFromMainRoom)
+            {
+                CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB);
+                ConnectClosestRooms(allRooms, true);
+            }
+
+            // Any rooms that are not connected to the main room, are forced to find a connection.
+            if (!forceAccessibilityFromMainRoom)
+            {
+                ConnectClosestRooms(allRooms, true);
             }
         }
 
@@ -401,16 +445,17 @@ namespace MapBuilder
             }*/
         }
 
-        class Room
+        class Room : IComparable<Room>
         {
             public List<Coord> tiles;
             public List<Coord> edgeTiles;
             public List<Room> connectedRooms;
             public int roomSize;
+            public bool isAccessibleFromMainRoom;
+            public bool isMainRoom;
 
             public Room()
             {
-                
             }
 
             public Room(List<Coord> roomTiles, int[,] map)
@@ -439,8 +484,28 @@ namespace MapBuilder
                 }
             }
 
+            public void SetAccessibleFromMainRoom()
+            {
+                if (!isAccessibleFromMainRoom)
+                {
+                    isAccessibleFromMainRoom = true;
+                    foreach (Room conectedRoom in connectedRooms)
+                    {
+                        conectedRoom.SetAccessibleFromMainRoom();
+                    }
+                }
+            }
+
             public static void ConnectRooms(Room roomA, Room roomB)
             {
+                if (roomA.isAccessibleFromMainRoom)
+                {
+                    roomB.SetAccessibleFromMainRoom();
+                }
+                else if(roomB.isAccessibleFromMainRoom)
+                {
+                    roomA.SetAccessibleFromMainRoom();
+                }
                 roomA.connectedRooms.Add(roomB);
                 roomB.connectedRooms.Add(roomA);
             }
@@ -448,6 +513,11 @@ namespace MapBuilder
             public bool IsConnected(Room otherRoom)
             {
                 return connectedRooms.Contains(otherRoom);
+            }
+
+            public int CompareTo(Room otherRoom)
+            {
+                return otherRoom.roomSize.CompareTo(roomSize);
             }
         }
 
