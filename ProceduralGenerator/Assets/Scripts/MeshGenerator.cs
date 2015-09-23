@@ -1,6 +1,4 @@
 ﻿
-using UnityEngine.UI;
-
 namespace MapBuilder
 {
     using UnityEngine;
@@ -347,31 +345,57 @@ namespace MapBuilder
             }*/
         }
 
+        /// <summary>
+        /// Base class for node objects.
+        /// </summary>
         public class Node
         {
+            /// <summary>
+            /// The position of the node.
+            /// </summary>
             public Vector3 position;
+
+            /// <summary>
+            /// The vertex index of this node.
+            /// </summary>
             public int vertexIndex = -1;
 
+            /// <summary>
+            /// Creates a new instance of the <see cref="Node"/> class.
+            /// </summary>
+            /// <param name="position">The position of the node.</param>
             public Node(Vector3 position)
             {
                 this.position = position;
             }
-
-            public override string ToString()
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.AppendFormat("Node: [position: {0}]", position);
-
-                return sb.ToString();
-            }
         }
 
+        /// <summary>
+        /// Control node class.
+        /// </summary>
         public class ControlNode : Node
         {
+            /// <summary>
+            /// Whether the control node is active.
+            /// </summary>
             public bool active;
-            public Node above, right;
 
+            /// <summary>
+            /// The node above.
+            /// </summary>
+            public Node above;
+
+            /// <summary>
+            /// The node to the right.
+            /// </summary>
+            public Node right;
+
+            /// <summary>
+            /// Creates a new instance of the <see cref="ControlNode"/> class.
+            /// </summary>
+            /// <param name="position">The position of the control node.</param>
+            /// <param name="active">Whether the control node is active.</param>
+            /// <param name="squareSize">The size of the square.</param>
             public ControlNode(Vector3 position, bool active, float squareSize)
                 : base(position)
             {
@@ -381,6 +405,21 @@ namespace MapBuilder
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// [ ] - Control node
+        ///  o  - Node
+        ///  
+        /// 
+        /// [ ]   o   [ ]
+        /// 
+        ///  o         o
+        /// 
+        /// [ ]   o   [ ]
+        /// </remarks>
         public class Square
         {
             public ControlNode topLeft, topRight, bottomRight, bottomLeft;
