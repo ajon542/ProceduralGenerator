@@ -1,9 +1,8 @@
 ﻿
-using System;
-
-namespace MapBuilder
+namespace MapBuilder.Tutorials
 {
     using UnityEngine;
+    using System;
     using System.Collections.Generic;
 
     public class MapBuilder : MonoBehaviour

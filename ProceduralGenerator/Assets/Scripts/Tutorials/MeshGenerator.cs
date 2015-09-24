@@ -1,5 +1,5 @@
 ﻿
-namespace MapBuilder
+namespace MapBuilder.Tutorials
 {
     using UnityEngine;
     using System.Collections.Generic;
