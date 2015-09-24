@@ -1,7 +1,9 @@
-﻿namespace Dungeon
+﻿
+namespace Dungeon
 {
     using UnityEngine;
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Map generator for a single level of the dungeon.
@@ -82,44 +84,14 @@
         {
             map = new Map(width, height);
 
-            RandomizeMap();
-            SmoothMap();
-        }
+            map.Randomize(fillPercentage);
 
-        /// <summary>
-        /// Generate a randomly filled map with filled / non-filled tile status.
-        /// </summary>
-        private void RandomizeMap()
-        {
-            System.Random rand = new System.Random(Time.time.GetHashCode());
-
-            // Generate the random data for each cell in the map.
-            for (int x = 0; x < map.Width; ++x)
+            for (int i = 0; i < 5; ++i)
             {
-                for (int y = 0; y < map.Height; ++y)
-                {
-                    Location location = new Location(x, y);
-
-                    // Set the outer wall cells to filled.
-                    if (x == 0 || x == map.Width - 1 || y == 0 || y == map.Height - 1)
-                    {
-                        map.SetValueAtLocation(location, 1);
-                    }
-                    // Center cells have random data.
-                    else
-                    {
-                        map.SetValueAtLocation(location, (rand.Next(0, 100) < fillPercentage) ? 1 : 0);
-                    }
-                }
+                map.Smooth();                
             }
-        }
 
-        /// <summary>
-        /// Smooth the map based on simple cellular automata rules.
-        /// </summary>
-        private void SmoothMap()
-        {
-            
+            map.AddBorder();
         }
     }
 }
