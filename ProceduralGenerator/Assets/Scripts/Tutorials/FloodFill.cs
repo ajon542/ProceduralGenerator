@@ -189,7 +189,7 @@
         }
     }
 
-    class Location
+    public class Location
     {
         public readonly int x;
         public readonly int y;
