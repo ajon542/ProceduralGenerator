@@ -10,14 +10,33 @@
 
         private LevelArea root;
 
+        System.Random rand = new System.Random();
+
         private void Start()
         {
             // left, right, bottom, top.
             root = new LevelArea(new Bounds(0, width, 0, height));
 
-            root.SplitAlongHorizontalAxis(50);
-            root.area1.SplitAlongVerticalAxis(60);
-            root.area2.SplitAlongVerticalAxis(30);
+            root.SplitAlongVerticalAxis(50);
+
+            LevelArea tmp;
+
+            tmp = root.area1;
+            tmp.SplitAlongHorizontalAxis(50);
+
+            tmp = root.area1.area1;
+            tmp.SplitAlongVerticalAxis(30);
+            tmp = root.area1.area2;
+            tmp.SplitAlongVerticalAxis(60);
+            
+            tmp = root.area2;
+            tmp.SplitAlongHorizontalAxis(50);
+
+            tmp = root.area2.area1;
+            tmp.SplitAlongVerticalAxis(30);
+            tmp = root.area2.area2;
+            tmp.SplitAlongVerticalAxis(60);
+
         }
 
         private void OnDrawGizmos()
@@ -83,7 +102,7 @@
         public void SplitAlongHorizontalAxis(float percentage)
         {
             // Split the current level along the horizontal axis.
-            float splitPoint = (bounds.top + bounds.bottom) * percentage / 100.0f;
+            float splitPoint = ((bounds.top - bounds.bottom) * percentage / 100.0f) + bounds.bottom;
 
             // Create the sub areas with the new bounds.
             area1 = new LevelArea(new Bounds(bounds.left, bounds.right, splitPoint, bounds.top));
@@ -93,7 +112,7 @@
         public void SplitAlongVerticalAxis(float percentage)
         {
             // Split the current level along the horizontal axis.
-            float splitPoint = (bounds.left + bounds.right) * percentage / 100.0f;
+            float splitPoint = ((bounds.right - bounds.left) * percentage / 100.0f) + bounds.left;
 
             // Create the sub areas with the new bounds.
             area1 = new LevelArea(new Bounds(bounds.left, splitPoint, bounds.bottom, bounds.top));
