@@ -100,7 +100,7 @@
                 {
                     Location location = new Location(x, y);
 
-                    // Set the wall cells to filled.
+                    // Set the outer wall cells to filled.
                     if (x == 0 || x == map.Width - 1 || y == 0 || y == map.Height - 1)
                     {
                         map.SetValueAtLocation(location, 1);
