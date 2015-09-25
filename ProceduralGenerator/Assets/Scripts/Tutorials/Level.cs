@@ -3,12 +3,6 @@
     using UnityEngine;
     using System.Collections.Generic;
 
-    public enum SplitType
-    {
-        HorizontalAxis,
-        VerticalAxis
-    }
-
     public class Room
     {
         public Bounds bounds;
@@ -99,9 +93,6 @@
             rooms[0] = null;
             rooms[1] = new Room(mapWidth, mapHeight);
 
-            SplitType[] roomSplitTypes = new SplitType[rooms.Length];
-            roomSplitTypes[1] = SplitType.HorizontalAxis;
-
             int index = 1;
             Queue<int> queue = new Queue<int>();
             queue.Enqueue(index);
@@ -117,42 +108,24 @@
                 Room roomB;
 
                 // Split the room
-                if (roomSplitTypes[index] == SplitType.HorizontalAxis)
+                if (rooms[index].bounds.width > rooms[index].bounds.height)
                 {
-                    rooms[index].SplitAlongVerticalAxis(rand.Next(40, 60), out roomA, out roomB);
+                    rooms[index].SplitAlongVerticalAxis(rand.Next(30, 70), out roomA, out roomB);
                 }
                 else
                 {
-                    rooms[index].SplitAlongHorizontalAxis(rand.Next(40, 60), out roomA, out roomB);
+                    rooms[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out roomA, out roomB);
                 }
 
                 if (left < rooms.Length)
                 {
                     queue.Enqueue(left);
                     rooms[left] = roomA;
-
-                    if (roomSplitTypes[index] == SplitType.HorizontalAxis)
-                    {
-                        roomSplitTypes[left] = SplitType.VerticalAxis;
-                    }
-                    else
-                    {
-                        roomSplitTypes[left] = SplitType.HorizontalAxis;
-                    }
                 }
                 if (right < rooms.Length)
                 {
                     queue.Enqueue(right);
                     rooms[right] = roomB;
-
-                    if (roomSplitTypes[index] == SplitType.HorizontalAxis)
-                    {
-                        roomSplitTypes[right] = SplitType.VerticalAxis;
-                    }
-                    else
-                    {
-                        roomSplitTypes[right] = SplitType.HorizontalAxis;
-                    }
                 }
             }
         }
@@ -190,6 +163,8 @@
         public readonly float right;
         public readonly float bottom;
         public readonly float top;
+        public readonly float width;
+        public readonly float height;
 
         public Bounds()
         {
@@ -197,6 +172,9 @@
             right = 0;
             top = 0;
             bottom = 0;
+
+            width = right - left;
+            height = top - bottom;
         }
 
         public Bounds(float left, float right, float bottom, float top)
@@ -205,6 +183,9 @@
             this.right = right;
             this.bottom = bottom;
             this.top = top;
+
+            width = right - left;
+            height = top - bottom;
         }
 
         public void Draw()
