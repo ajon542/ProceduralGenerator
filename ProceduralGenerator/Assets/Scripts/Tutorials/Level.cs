@@ -1,57 +1,9 @@
-﻿namespace MapBuilder.Tutorials
+﻿
+namespace MapBuilder.Tutorials
 {
     using UnityEngine;
     using System.Collections.Generic;
-
-    public class Room
-    {
-        public Bounds bounds;
-
-        public Room()
-        {
-            bounds = new Bounds();
-        }
-
-        public Room(int width, int height)
-        {
-            bounds = new Bounds(0, width, 0, height);
-        }
-
-        public Room(Bounds bounds)
-        {
-            this.bounds = bounds;
-        }
-
-        public void Draw()
-        {
-            bounds.Draw();
-        }
-
-        public void SplitAlongHorizontalAxis(float percentage, out Room roomA, out Room roomB)
-        {
-            // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.top - bounds.bottom) * percentage / 100.0f) + bounds.bottom;
-
-            // Create the sub areas with the new bounds.
-            roomA = new Room(new Bounds(bounds.left, bounds.right, splitPoint, bounds.top));
-            roomB = new Room(new Bounds(bounds.left, bounds.right, bounds.bottom, splitPoint));
-        }
-
-        public void SplitAlongVerticalAxis(float percentage, out Room roomA, out Room roomB)
-        {
-            // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.right - bounds.left) * percentage / 100.0f) + bounds.left;
-
-            // Create the sub areas with the new bounds.
-            roomA = new Room(new Bounds(bounds.left, splitPoint, bounds.bottom, bounds.top));
-            roomB = new Room(new Bounds(splitPoint, bounds.right, bounds.bottom, bounds.top));
-        }
-
-        public override string ToString()
-        {
-            return string.Format("[Room] {0}", bounds);
-        }
-    }
+    using Dungeon;
 
     public class Level : MonoBehaviour
     {
@@ -59,7 +11,7 @@
 
         private System.Random rand = new System.Random();
 
-        private Room[] rooms;
+        private Area[] areas;
 
         private int Parent(int i)
         {
@@ -89,9 +41,9 @@
             // n = 2(n - l) + 1
             // n = 2n - 2l + 1
             // n = 2l - 1
-            rooms = new Room[2*numberOfRooms - 1];
-            rooms[0] = null;
-            rooms[1] = new Room(mapWidth, mapHeight);
+            areas = new Area[2 * numberOfRooms - 1];
+            areas[0] = null;
+            areas[1] = new Area(mapWidth, mapHeight);
 
             int index = 1;
             Queue<int> queue = new Queue<int>();
@@ -104,28 +56,28 @@
                 int left = Left(index);
                 int right = Right(index);
 
-                Room roomA;
-                Room roomB;
+                Area areaA;
+                Area areaB;
 
                 // Split the room
-                if (rooms[index].bounds.width > rooms[index].bounds.height)
+                if (areas[index].bounds.width > areas[index].bounds.height)
                 {
-                    rooms[index].SplitAlongVerticalAxis(rand.Next(30, 70), out roomA, out roomB);
+                    areas[index].SplitAlongVerticalAxis(rand.Next(30, 70), out areaA, out areaB);
                 }
                 else
                 {
-                    rooms[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out roomA, out roomB);
+                    areas[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out areaA, out areaB);
                 }
 
-                if (left < rooms.Length)
+                if (left < areas.Length)
                 {
                     queue.Enqueue(left);
-                    rooms[left] = roomA;
+                    areas[left] = areaA;
                 }
-                if (right < rooms.Length)
+                if (right < areas.Length)
                 {
                     queue.Enqueue(right);
-                    rooms[right] = roomB;
+                    areas[right] = areaB;
                 }
             }
         }
@@ -145,69 +97,15 @@
 
         private void OnDrawGizmos()
         {
-            if (rooms == null)
+            if (areas == null)
             {
                 return;
             }
 
-            for (int i = 1; i < rooms.Length; ++i)
+            for (int i = 1; i < areas.Length; ++i)
             {
-                rooms[i].Draw();
+                areas[i].Draw();
             }
-        }
-    }
-
-    public class Bounds
-    {
-        public readonly float left;
-        public readonly float right;
-        public readonly float bottom;
-        public readonly float top;
-        public readonly float width;
-        public readonly float height;
-
-        public Bounds()
-        {
-            left = 0;
-            right = 0;
-            top = 0;
-            bottom = 0;
-
-            width = right - left;
-            height = top - bottom;
-        }
-
-        public Bounds(float left, float right, float bottom, float top)
-        {
-            this.left = left;
-            this.right = right;
-            this.bottom = bottom;
-            this.top = top;
-
-            width = right - left;
-            height = top - bottom;
-        }
-
-        public void Draw()
-        {
-            Vector3 bottomLeft = new Vector3(left, bottom);
-            Vector3 bottomRight = new Vector3(right, bottom);
-            Vector3 topRight = new Vector3(right, top);
-            Vector3 topLeft = new Vector3(left, top);
-
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(bottomLeft, bottomRight);
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(bottomRight, topRight);
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(topRight, topLeft);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(topLeft, bottomLeft);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("[Bounds] l:{0} r:{1} t:{2} b:{3}", left, right, top, bottom);
         }
     }
 }

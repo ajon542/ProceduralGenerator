@@ -203,7 +203,7 @@ namespace MapBuilder.Tutorials
                 }
             }
 
-            // Room graph must be connected.
+            // Area graph must be connected.
             survivingRooms.Sort();
             survivingRooms[0].isMainRoom = true;
             survivingRooms[0].isAccessibleFromMainRoom = true;
