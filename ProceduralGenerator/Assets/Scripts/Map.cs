@@ -54,6 +54,23 @@ namespace Dungeon
         }
 
         /// <summary>
+        /// Get the value at the given map location.
+        /// </summary>
+        /// <param name="x">The x-location.</param>
+        /// <param name="y">The y-location.</param>
+        /// <returns>The value at the given location; -1 if the location is not within map bounds.</returns>
+        public int GetValueAtLocation(int x, int y)
+        {
+            // Check if the location is within map bounds.
+            if (!IsValidLocation(new Location(x, y)))
+            {
+                return -1;
+            }
+
+            return map[x, y];
+        }
+
+        /// <summary>
         /// Set the value at the given map location.
         /// </summary>
         /// <param name="location">The location.</param>
@@ -77,6 +94,17 @@ namespace Dungeon
         public bool IsValidLocation(Location location)
         {
             return location.x >= 0 && location.x < Width && location.y >= 0 && location.y < Height;
+        }
+
+        /// <summary>
+        /// Determines whether the given location is in the map bounds.
+        /// </summary>
+        /// <param name="x">The x-location.</param>
+        /// <param name="y">The y-location.</param>
+        /// <returns>true if the locaiton is within map bounds; false otherwise.</returns>
+        public bool IsValidLocation(int x, int y)
+        {
+            return x >= 0 && x < Width && y >= 0 && y < Height;
         }
 
         /// <summary>
