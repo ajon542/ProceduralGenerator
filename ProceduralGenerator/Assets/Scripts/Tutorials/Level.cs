@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MapBuilder.Tutorials
+﻿namespace MapBuilder.Tutorials
 {
     using UnityEngine;
     using System.Collections.Generic;
@@ -83,9 +81,7 @@ namespace MapBuilder.Tutorials
         {
             return (i << 1) + 1;
         }
-
-        private bool splitType = false;
-
+        
         private void GenerateRooms(int numberOfRooms, int mapWidth, int mapHeight)
         {
             // Tree node formulas
@@ -103,6 +99,9 @@ namespace MapBuilder.Tutorials
             rooms[0] = null;
             rooms[1] = new Room(mapWidth, mapHeight);
 
+            SplitType[] roomSplitTypes = new SplitType[rooms.Length];
+            roomSplitTypes[1] = SplitType.HorizontalAxis;
+
             int index = 1;
             Queue<int> queue = new Queue<int>();
             queue.Enqueue(index);
@@ -117,25 +116,43 @@ namespace MapBuilder.Tutorials
                 Room roomA;
                 Room roomB;
 
-                if (splitType)
+                // Split the room
+                if (roomSplitTypes[index] == SplitType.HorizontalAxis)
                 {
-                    rooms[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out roomA, out roomB);
+                    rooms[index].SplitAlongVerticalAxis(rand.Next(40, 60), out roomA, out roomB);
                 }
                 else
                 {
-                    rooms[index].SplitAlongVerticalAxis(rand.Next(30, 70), out roomA, out roomB);
+                    rooms[index].SplitAlongHorizontalAxis(rand.Next(40, 60), out roomA, out roomB);
                 }
-                splitType = !splitType;
 
                 if (left < rooms.Length)
                 {
                     queue.Enqueue(left);
                     rooms[left] = roomA;
+
+                    if (roomSplitTypes[index] == SplitType.HorizontalAxis)
+                    {
+                        roomSplitTypes[left] = SplitType.VerticalAxis;
+                    }
+                    else
+                    {
+                        roomSplitTypes[left] = SplitType.HorizontalAxis;
+                    }
                 }
                 if (right < rooms.Length)
                 {
                     queue.Enqueue(right);
                     rooms[right] = roomB;
+
+                    if (roomSplitTypes[index] == SplitType.HorizontalAxis)
+                    {
+                        roomSplitTypes[right] = SplitType.VerticalAxis;
+                    }
+                    else
+                    {
+                        roomSplitTypes[right] = SplitType.HorizontalAxis;
+                    }
                 }
             }
         }
