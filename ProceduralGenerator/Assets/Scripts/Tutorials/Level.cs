@@ -1,52 +1,169 @@
-﻿namespace MapBuilder.Tutorials
+﻿using System;
+
+namespace MapBuilder.Tutorials
 {
     using UnityEngine;
     using System.Collections.Generic;
 
+    public enum SplitType
+    {
+        HorizontalAxis,
+        VerticalAxis
+    }
+
+    public class Room
+    {
+        public Bounds bounds;
+
+        public Room()
+        {
+            bounds = new Bounds();
+        }
+
+        public Room(int width, int height)
+        {
+            bounds = new Bounds(0, width, 0, height);
+        }
+
+        public Room(Bounds bounds)
+        {
+            this.bounds = bounds;
+        }
+
+        public void Draw()
+        {
+            bounds.Draw();
+        }
+
+        public void SplitAlongHorizontalAxis(float percentage, out Room roomA, out Room roomB)
+        {
+            // Split the current level along the horizontal axis.
+            float splitPoint = ((bounds.top - bounds.bottom) * percentage / 100.0f) + bounds.bottom;
+
+            // Create the sub areas with the new bounds.
+            roomA = new Room(new Bounds(bounds.left, bounds.right, splitPoint, bounds.top));
+            roomB = new Room(new Bounds(bounds.left, bounds.right, bounds.bottom, splitPoint));
+        }
+
+        public void SplitAlongVerticalAxis(float percentage, out Room roomA, out Room roomB)
+        {
+            // Split the current level along the horizontal axis.
+            float splitPoint = ((bounds.right - bounds.left) * percentage / 100.0f) + bounds.left;
+
+            // Create the sub areas with the new bounds.
+            roomA = new Room(new Bounds(bounds.left, splitPoint, bounds.bottom, bounds.top));
+            roomB = new Room(new Bounds(splitPoint, bounds.right, bounds.bottom, bounds.top));
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[Room] {0}", bounds);
+        }
+    }
+
     public class Level : MonoBehaviour
     {
-        public int width = 100;
-        public int height = 100;
+        public int roomCount = 5;
 
-        private LevelArea root;
+        private System.Random rand = new System.Random();
 
-        System.Random rand = new System.Random();
+        private Room[] rooms;
+
+        private int Parent(int i)
+        {
+            return i >> 1;
+        }
+
+        private int Left(int i)
+        {
+            return i << 1;
+        }
+
+        private int Right(int i)
+        {
+            return (i << 1) + 1;
+        }
+
+        private bool splitType = false;
+
+        private void GenerateRooms(int numberOfRooms, int mapWidth, int mapHeight)
+        {
+            // Tree node formulas
+            // n = mi + 1
+            // n = i + l
+            //
+            // l = numberOfRooms
+            // m = 2 (binary tree)
+            //
+            // i = n - l
+            // n = 2(n - l) + 1
+            // n = 2n - 2l + 1
+            // n = 2l - 1
+            rooms = new Room[2*numberOfRooms - 1];
+            rooms[0] = null;
+            rooms[1] = new Room(mapWidth, mapHeight);
+
+            int index = 1;
+            Queue<int> queue = new Queue<int>();
+            queue.Enqueue(index);
+
+            while (queue.Count > 0)
+            {
+                index = queue.Dequeue();
+
+                int left = Left(index);
+                int right = Right(index);
+
+                Room roomA;
+                Room roomB;
+
+                if (splitType)
+                {
+                    rooms[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out roomA, out roomB);
+                }
+                else
+                {
+                    rooms[index].SplitAlongVerticalAxis(rand.Next(30, 70), out roomA, out roomB);
+                }
+                splitType = !splitType;
+
+                if (left < rooms.Length)
+                {
+                    queue.Enqueue(left);
+                    rooms[left] = roomA;
+                }
+                if (right < rooms.Length)
+                {
+                    queue.Enqueue(right);
+                    rooms[right] = roomB;
+                }
+            }
+        }
 
         private void Start()
         {
-            // left, right, bottom, top.
-            root = new LevelArea(new Bounds(0, width, 0, height));
+            GenerateRooms(roomCount, 200, 200);
+        }
 
-            root.SplitAlongVerticalAxis(50);
-
-            LevelArea tmp;
-
-            tmp = root.area1;
-            tmp.SplitAlongHorizontalAxis(50);
-
-            tmp = root.area1.area1;
-            tmp.SplitAlongVerticalAxis(30);
-            tmp = root.area1.area2;
-            tmp.SplitAlongVerticalAxis(60);
-            
-            tmp = root.area2;
-            tmp.SplitAlongHorizontalAxis(50);
-
-            tmp = root.area2.area1;
-            tmp.SplitAlongVerticalAxis(30);
-            tmp = root.area2.area2;
-            tmp.SplitAlongVerticalAxis(60);
-
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                GenerateRooms(roomCount, 200, 200);
+            }
         }
 
         private void OnDrawGizmos()
         {
-            if (root == null)
+            if (rooms == null)
             {
                 return;
             }
 
-            root.Draw();
+            for (int i = 1; i < rooms.Length; ++i)
+            {
+                rooms[i].Draw();
+            }
         }
     }
 
@@ -56,6 +173,14 @@
         public readonly float right;
         public readonly float bottom;
         public readonly float top;
+
+        public Bounds()
+        {
+            left = 0;
+            right = 0;
+            top = 0;
+            bottom = 0;
+        }
 
         public Bounds(float left, float right, float bottom, float top)
         {
@@ -81,55 +206,10 @@
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(topLeft, bottomLeft);
         }
-    }
 
-    /// <summary>
-    /// LevelArea by default starts out as a leaf node.
-    /// When we call split, it will divide itself into two regions which then become the leaf nodes.
-    /// </summary>
-    public class LevelArea
-    {
-        public LevelArea area1;
-        public LevelArea area2;
-
-        public Bounds bounds;
-
-        public LevelArea(Bounds bounds)
+        public override string ToString()
         {
-            this.bounds = bounds;
-        }
-
-        public void SplitAlongHorizontalAxis(float percentage)
-        {
-            // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.top - bounds.bottom) * percentage / 100.0f) + bounds.bottom;
-
-            // Create the sub areas with the new bounds.
-            area1 = new LevelArea(new Bounds(bounds.left, bounds.right, splitPoint, bounds.top));
-            area2 = new LevelArea(new Bounds(bounds.left, bounds.right, bounds.bottom, splitPoint));
-        }
-
-        public void SplitAlongVerticalAxis(float percentage)
-        {
-            // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.right - bounds.left) * percentage / 100.0f) + bounds.left;
-
-            // Create the sub areas with the new bounds.
-            area1 = new LevelArea(new Bounds(bounds.left, splitPoint, bounds.bottom, bounds.top));
-            area2 = new LevelArea(new Bounds(splitPoint, bounds.right, bounds.bottom, bounds.top));
-        }
-
-        public void Draw()
-        {
-            bounds.Draw();
-            if (area1 != null)
-            {
-                area1.Draw();
-            }
-            if (area2 != null)
-            {
-                area2.Draw();
-            }
+            return string.Format("[Bounds] l:{0} r:{1} t:{2} b:{3}", left, right, top, bottom);
         }
     }
 }
