@@ -2,8 +2,6 @@
 namespace Dungeon
 {
     using UnityEngine;
-    using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Map generator for a single level of the dungeon.

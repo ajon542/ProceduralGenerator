@@ -1,10 +1,8 @@
 ﻿
-using System;
-using System.Linq;
-
 namespace Dungeon
 {
     using UnityEngine;
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -85,6 +83,14 @@ namespace Dungeon
             if (meshNodes.Count >= 4)
             {
                 CreateTriangle(meshNodes[0], meshNodes[2], meshNodes[3]);
+            }
+            if (meshNodes.Count >= 5)
+            {
+                CreateTriangle(meshNodes[0], meshNodes[3], meshNodes[4]);
+            }
+            if (meshNodes.Count >= 6)
+            {
+                CreateTriangle(meshNodes[0], meshNodes[4], meshNodes[5]);
             }
         }
 
