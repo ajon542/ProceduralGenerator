@@ -60,7 +60,7 @@ namespace MapBuilder.Tutorials
                 Area areaB;
 
                 // Split the room
-                if (areas[index].bounds.width > areas[index].bounds.height)
+                if (areas[index].Bounds.width > areas[index].Bounds.height)
                 {
                     areas[index].SplitAlongVerticalAxis(rand.Next(30, 70), out areaA, out areaB);
                 }

@@ -5,14 +5,17 @@
     /// </summary>
     public class Area
     {
-        public Bounds bounds;
+        /// <summary>
+        /// Gets or sets the bounds of the area.
+        /// </summary>
+        public Bounds Bounds { get; set; }
 
         /// <summary>
         /// Creates a new instance of the <see cref="Area"/> class.
         /// </summary>
         public Area()
         {
-            bounds = new Bounds();
+            Bounds = new Bounds();
         }
 
         /// <summary>
@@ -22,7 +25,7 @@
         /// <param name="height">The height of the area.</param>
         public Area(int width, int height)
         {
-            bounds = new Bounds(0, width, 0, height);
+            Bounds = new Bounds(0, width, 0, height);
         }
 
         /// <summary>
@@ -31,7 +34,7 @@
         /// <param name="bounds">The bounds of the area.</param>
         public Area(Bounds bounds)
         {
-            this.bounds = bounds;
+            Bounds = bounds;
         }
 
         /// <summary>
@@ -39,7 +42,7 @@
         /// </summary>
         public void Draw()
         {
-            bounds.Draw();
+            Bounds.Draw();
         }
 
         /// <summary>
@@ -51,11 +54,11 @@
         public void SplitAlongHorizontalAxis(float percentage, out Area areaA, out Area areaB)
         {
             // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.top - bounds.bottom) * percentage / 100.0f) + bounds.bottom;
+            float splitPoint = ((Bounds.top - Bounds.bottom) * percentage / 100.0f) + Bounds.bottom;
 
             // Create the sub areas with the new bounds.
-            areaA = new Area(new Bounds(bounds.left, bounds.right, splitPoint, bounds.top));
-            areaB = new Area(new Bounds(bounds.left, bounds.right, bounds.bottom, splitPoint));
+            areaA = new Area(new Bounds(Bounds.left, Bounds.right, splitPoint, Bounds.top));
+            areaB = new Area(new Bounds(Bounds.left, Bounds.right, Bounds.bottom, splitPoint));
         }
 
         /// <summary>
@@ -67,11 +70,11 @@
         public void SplitAlongVerticalAxis(float percentage, out Area areaA, out Area areaB)
         {
             // Split the current level along the horizontal axis.
-            float splitPoint = ((bounds.right - bounds.left) * percentage / 100.0f) + bounds.left;
+            float splitPoint = ((Bounds.right - Bounds.left) * percentage / 100.0f) + Bounds.left;
 
             // Create the sub areas with the new bounds.
-            areaA = new Area(new Bounds(bounds.left, splitPoint, bounds.bottom, bounds.top));
-            areaB = new Area(new Bounds(splitPoint, bounds.right, bounds.bottom, bounds.top));
+            areaA = new Area(new Bounds(Bounds.left, splitPoint, Bounds.bottom, Bounds.top));
+            areaB = new Area(new Bounds(splitPoint, Bounds.right, Bounds.bottom, Bounds.top));
         }
 
         /// <summary>
@@ -80,7 +83,7 @@
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return string.Format("[Area] {0}", bounds);
+            return string.Format("[Area] {0}", Bounds);
         }
     }
 }
