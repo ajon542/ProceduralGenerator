@@ -60,10 +60,10 @@ namespace MapBuilder.Tutorials
         /// </summary>
         /// <remarks>
         /// The general algorithm is as follows:
-        /// 1. Specify the width and height of the level, this become the overall level area.
-        /// 2. Split the area into two parts horizontally or vertically.
-        /// 3. The two new areas become children of the parent area.
-        /// 4. Repeat the process, creating a tree until we have the desired number of areas.
+        /// 1. Specify the width and height of the level, this becomes the overall level area.
+        /// 2. Split the area into two parts either horizontally or vertically.
+        /// 3. Store the two new areas as children of the parent area.
+        /// 4. Repeat the process until we have the desired number of areas.
         /// </remarks>
         /// <param name="numberOfAreas">The number of areas in the level.</param>
         /// <param name="levelWidth">The width of the level.</param>

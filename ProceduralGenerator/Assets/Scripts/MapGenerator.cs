@@ -33,6 +33,8 @@ namespace Dungeon
         /// </summary>
         private Map map;
 
+        private ControlSquareGrid grid;
+
         /// <summary>
         /// Start building the map.
         /// </summary>
@@ -57,7 +59,7 @@ namespace Dungeon
         /// </summary>
         private void OnDrawGizmos()
         {
-            if (map == null)
+            /*if (map == null)
             {
                 return;
             }
@@ -72,7 +74,14 @@ namespace Dungeon
                     Vector3 pos = new Vector3(-width / 2 + x + 0.5f, -height / 2 + y + 0.5f);
                     Gizmos.DrawCube(pos, Vector3.one);
                 }
+            }*/
+
+            if (grid == null)
+            {
+                return;
             }
+
+            grid.Draw();
         }
 
         /// <summary>
@@ -80,6 +89,7 @@ namespace Dungeon
         /// </summary>
         private void BuildMap()
         {
+            // Create the map.
             map = new Map(width, height);
 
             map.Randomize(fillPercentage);
@@ -90,6 +100,9 @@ namespace Dungeon
             }
 
             map.AddBorder();
+
+            // Create the control grid from the map.
+            grid = new ControlSquareGrid(map, 1);
         }
     }
 }
