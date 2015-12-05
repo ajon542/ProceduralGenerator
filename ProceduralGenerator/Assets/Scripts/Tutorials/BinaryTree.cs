@@ -9,6 +9,13 @@ namespace MapBuilder.Tutorials
     /// </summary>
     public class BalancedBinaryTree
     {
+        // The implementation of a balanced binary tree will
+        // be a list of nodes. By performing the appropriate
+        // indexing operations on the list as shown in the Left,
+        // Right and Parent methods of this class, the structure
+        // becomes more tree-like. Additionally, the tree will not
+        // have any ordering applied to it. This means an insertion
+        // of an element will simply be added to the end of the list.
         private const int treeRoot = 1;
         private List<int> tree = new List<int>();
 
