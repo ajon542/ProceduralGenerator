@@ -24,6 +24,8 @@ namespace MapBuilder.Tutorials
         /// <remarks>
         /// This is used as a balanced, binary tree.
         /// </remarks>
+        /// TODO: Now that we populate all the areas, how can we determine
+        /// which areas are the room?
         private Area[] areas;
 
         /// <summary>
@@ -167,7 +169,7 @@ namespace MapBuilder.Tutorials
                 return;
             }
 
-            for (int i = 1; i < areas.Length; ++i)
+            for (int i = treeRoot; i < areas.Length; ++i)
             {
                 areas[i].Draw();
             }
