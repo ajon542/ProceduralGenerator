@@ -79,6 +79,8 @@ namespace MapBuilder.Tutorials
         private void GenerateLevelAreas(int numberOfAreas, int levelWidth, int levelHeight)
         {
             // Tree node formulas
+            // NOTE: These formulas hold true if each of the internal nodes
+            // has m children.
             // n = mi + 1
             // n = i + l
             //

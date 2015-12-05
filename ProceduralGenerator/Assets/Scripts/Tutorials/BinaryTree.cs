@@ -38,7 +38,7 @@ namespace MapBuilder.Tutorials
             tree.Add(0);
         }
 
-        public BalancedBinaryTree(int leafNodes)
+        /*public BalancedBinaryTree(int leafNodes)
         {
             // n = 2i + 1
             // n = i + l
@@ -63,7 +63,7 @@ namespace MapBuilder.Tutorials
 
             // Therefore:
             // n = internalNodes + internalNodes + 1
-        }
+        }*/
 
 
         public int Insert(int element)
