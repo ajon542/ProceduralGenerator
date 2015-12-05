@@ -19,10 +19,52 @@ namespace MapBuilder.Tutorials
         private const int treeRoot = 1;
         private List<int> tree = new List<int>();
 
+        // We could create the binary tree by:
+        // 1. Specifying how many leaf nodes
+        // 2. Specifying the height of the tree
+        // 3. Specifying the number of internal nodes
+        // 4. Not providing any information
+
+        // Tree node formulas
+        // n = mi + 1
+        // n = i + l
+        // Where:
+        // n = total number of nodes
+        // i = number of internal nodes
+        // l = number of leaf nodes
+        // m = m-ary tree, but in this case should be 2 for binary
         public BalancedBinaryTree()
         {
             tree.Add(0);
         }
+
+        public BalancedBinaryTree(int leafNodes)
+        {
+            // n = 2i + 1
+            // n = i + l
+            // 2i + 1 = i + l
+            // i = l - 1
+
+            // Therefore:
+            // n = leafNodes + leafNodes - 1
+        }
+
+        public BalancedBinaryTree(int height)
+        {
+            // n = 2^h
+        }
+
+        public BalancedBinaryTree(int internalNodes)
+        {
+            // n = 2i + 1
+            // n = i + l
+            // 2i + 1 = i + l
+            // l = i + 1
+
+            // Therefore:
+            // n = internalNodes + internalNodes + 1
+        }
+
 
         public int Insert(int element)
         {
