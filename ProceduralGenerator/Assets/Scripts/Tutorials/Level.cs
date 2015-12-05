@@ -11,6 +11,7 @@ namespace MapBuilder.Tutorials
         private const int levelHeight = 200;
         private const int minSplit = 30;
         private const int maxSplit = 70;
+        private const int treeRoot = 1;
 
         /// <summary>
         /// The number of areas in the level.
@@ -88,20 +89,26 @@ namespace MapBuilder.Tutorials
             // n = 2l - 1
             areas = new Area[2 * numberOfAreas - 1];
             areas[0] = null;
-            areas[1] = new Area(levelWidth, levelHeight);
+            // The way this works is areas[1] contains the overall area of the level.
+            // As we add the children to the areas array, the sum of the two children
+            // areas will equal the area of the parent.
+            areas[treeRoot] = new Area(levelWidth, levelHeight);
 
-            int index = 1;
+            int index = treeRoot;
             Queue<int> queue = new Queue<int>();
             queue.Enqueue(index);
 
             // Set the area of each of the child rooms.
             while (queue.Count > 0)
             {
+                // Get the parent index.
                 index = queue.Dequeue();
 
-                int left = Left(index);
-                int right = Right(index);
+                // Calculate the index of the two children.
+                int leftChild = Left(index);
+                int rightChild = Right(index);
 
+                // Generate the areas.
                 Area areaA;
                 Area areaB;
 
@@ -118,15 +125,15 @@ namespace MapBuilder.Tutorials
                 }
 
                 // Set the new area bounds.
-                if (left < areas.Length)
+                if (leftChild < areas.Length)
                 {
-                    queue.Enqueue(left);
-                    areas[left] = areaA;
+                    queue.Enqueue(leftChild);
+                    areas[leftChild] = areaA;
                 }
-                if (right < areas.Length)
+                if (rightChild < areas.Length)
                 {
-                    queue.Enqueue(right);
-                    areas[right] = areaB;
+                    queue.Enqueue(rightChild);
+                    areas[rightChild] = areaB;
                 }
             }
         }
