@@ -7,6 +7,11 @@ namespace MapBuilder.Tutorials
 
     public class Level : MonoBehaviour
     {
+        private const int levelWidth = 200;
+        private const int levelHeight = 200;
+        private const int minSplit = 30;
+        private const int maxSplit = 70;
+
         /// <summary>
         /// The number of areas in the level.
         /// </summary>
@@ -103,11 +108,13 @@ namespace MapBuilder.Tutorials
                 // Split the room based on the width and height parameters.
                 if (areas[index].Bounds.width > areas[index].Bounds.height)
                 {
-                    areas[index].SplitAlongVerticalAxis(rand.Next(30, 70), out areaA, out areaB);
+                    int splitPoint = rand.Next(minSplit, maxSplit);
+                    areas[index].SplitAlongVerticalAxis(splitPoint, out areaA, out areaB);
                 }
                 else
                 {
-                    areas[index].SplitAlongHorizontalAxis(rand.Next(30, 70), out areaA, out areaB);
+                    int splitPoint = rand.Next(minSplit, maxSplit);
+                    areas[index].SplitAlongHorizontalAxis(splitPoint, out areaA, out areaB);
                 }
 
                 // Set the new area bounds.
@@ -129,7 +136,7 @@ namespace MapBuilder.Tutorials
         /// </summary>
         private void Start()
         {
-            GenerateLevelAreas(areaCount, 200, 200);
+            GenerateLevelAreas(areaCount, levelWidth, levelHeight);
         }
 
         /// <summary>
@@ -139,7 +146,7 @@ namespace MapBuilder.Tutorials
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                GenerateLevelAreas(areaCount, 200, 200);
+                GenerateLevelAreas(areaCount, levelWidth, levelHeight);
             }
         }
 
