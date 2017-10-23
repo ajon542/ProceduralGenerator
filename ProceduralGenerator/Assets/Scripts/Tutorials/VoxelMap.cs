@@ -20,49 +20,15 @@
     /// </remarks>
     public class VoxelMap : MonoBehaviour
     {
-        /// <summary>
-        /// Demensions of the voxel map.
-        /// </summary>
         public float size = 2f;
-
-        /// <summary>
-        /// The voxel grid resolution.
-        /// </summary>
         public int voxelResolution = 8;
-
-        /// <summary>
-        /// The chunk resolution.
-        /// </summary>
         public int chunkResolution = 2;
-
-        /// <summary>
-        /// Prefab used for the voxel grids.
-        /// </summary>
         public VoxelGrid voxelGridPrefab;
-
-        /// <summary>
-        /// Storage for the voxel grids.
-        /// </summary>
         private VoxelGrid[] chunks;
-
-        /// <summary>
-        /// The size of each chunk.
-        /// </summary>
         private float chunkSize;
-
-        /// <summary>
-        /// The size of each voxel.
-        /// </summary>
         private float voxelSize;
-
-        /// <summary>
-        /// The half size of the map.
-        /// </summary>
         private float halfSize;
 
-        /// <summary>
-        /// Initialize the map.
-        /// </summary>
         private void Awake()
         {
             // Calculate the half size, chunk size and voxel size based on the input.
@@ -85,12 +51,6 @@
             box.size = new Vector3(size, size);
         }
 
-        /// <summary>
-        /// Create a chunk.
-        /// </summary>
-        /// <param name="i">Chunk index.</param>
-        /// <param name="x">Chunk x-coordinate.</param>
-        /// <param name="y">Chunk y-coordinate.</param>
         private void CreateChunk(int i, int x, int y)
         {
             VoxelGrid chunk = Instantiate(voxelGridPrefab);
@@ -113,9 +73,6 @@
             }
         }
 
-        /// <summary>
-        /// Detect user input and update the voxel map.
-        /// </summary>
         private void Update()
         {
             if (Input.GetMouseButton(0))
@@ -131,10 +88,6 @@
             }
         }
 
-        /// <summary>
-        /// Update the voxel map.
-        /// </summary>
-        /// <param name="point">The point which was touched.</param>
         private void EditVoxels(Vector3 point)
         {
             int centerX = (int)((point.x + halfSize) / voxelSize);
