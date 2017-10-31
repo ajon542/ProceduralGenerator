@@ -3,64 +3,31 @@
     using UnityEngine;
     using System.Collections.Generic;
 
-    /// <summary>
-    /// Component to contain the voxels.
-    /// </summary>
     [SelectionBase]
     public class VoxelGrid : MonoBehaviour
     {
-        /// <summary>
-        /// Resolution of the grid.
-        /// </summary>
-        /// <example>
-        /// For an 8x8 grid, set the resolution to 8.
-        /// </example>
         public int resolution;
 
-        /// <summary>
-        /// Voxel prefab.
-        /// </summary>
         public GameObject voxelPrefab;
 
-        /// <summary>
-        /// Voxel state.
-        /// </summary>
         private Voxel[] voxels;
 
-        /// <summary>
-        /// Size of the individual voxels.
-        /// </summary>
         private float voxelSize;
 
-        /// <summary>
-        /// Individual voxel materials for setting the colour based on the voxel state.
-        /// </summary>
         private Material[] voxelMaterials;
 
-        /// <summary>
-        /// Mesh for the voxel grid.
-        /// </summary>
         private Mesh mesh;
 
-        /// <summary>
-        /// List of vertices for the voxel grid mesh.
-        /// </summary>
         private List<Vector3> vertices;
 
-        /// <summary>
-        /// List of triangles for the voxel grid mesh.
-        /// </summary>
+        private List<Vector3> normals;
+
         private List<int> triangles;
 
         public VoxelGrid xNeighbor, yNeighbor, xyNeighbor;
         private float gridSize;
         private Voxel dummyX, dummyY, dummyT;
 
-        /// <summary>
-        /// Initialize the voxel grid.
-        /// </summary>
-        /// <param name="resolution">The resolution of the grid.</param>
-        /// <param name="size">The size of the grid.</param>
         public void Initialize(int resolution, float size)
         {
             // Initialize the grid data.
@@ -87,17 +54,12 @@
             mesh.name = "VoxelGrid Mesh";
             vertices = new List<Vector3>();
             triangles = new List<int>();
+            normals = new List<Vector3>();
 
             // Refresh the grid.
             Refresh();
         }
 
-        /// <summary>
-        /// Create a voxel game object.
-        /// </summary>
-        /// <param name="i">The index of the voxel.</param>
-        /// <param name="x">Voxel x-coordinate.</param>
-        /// <param name="y">Voxel y-coordinate.</param>
         private void CreateVoxel(int i, int x, int y)
         {
             GameObject o = Instantiate(voxelPrefab);
@@ -108,22 +70,17 @@
             voxels[i] = new Voxel(x, y, voxelSize);
         }
 
-        /// <summary>
-        /// Set the colours of the voxels dpeending on their state.
-        /// </summary>
         private void Refresh()
         {
             SetVoxelColors();
             Triangulate();
         }
 
-        /// <summary>
-        /// Generate the mesh.
-        /// </summary>
         private void Triangulate()
         {
             vertices.Clear();
             triangles.Clear();
+            normals.Clear();
             mesh.Clear();
 
             if (xNeighbor != null)
@@ -138,11 +95,9 @@
 
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
+            mesh.normals = normals.ToArray();
         }
 
-        /// <summary>
-        /// Generate the mesh.
-        /// </summary>
         private void TriangulateCellRows()
         {
             int cells = resolution - 1;
@@ -192,6 +147,17 @@
                 dummyT.BecomeXYDummyOf(xyNeighbor.voxels[0], gridSize);
                 TriangulateCell(voxels[voxels.Length - 1], dummyX, dummyY, dummyT);
             }
+        }
+
+        private void AddWall(Vector3 a, Vector3 b, Vector3 c)
+        {
+            // a = a.position
+            // b = a.yEdgePosition
+            // c = a.xEdgePosition
+
+            // Add the wall.
+            AddTriangle(b, new Vector3(b.x, b.y, -0.1f), c);
+            AddTriangle(c, new Vector3(b.x, b.y, -0.1f), new Vector3(c.x, c.y, -0.1f));
         }
 
         /// <summary>
@@ -316,12 +282,6 @@
             }
         }
 
-        /// <summary>
-        /// Adds a triangle to the current mesh data.
-        /// </summary>
-        /// <param name="a">First vertex of the triangle.</param>
-        /// <param name="b">Second vertex of the triangle.</param>
-        /// <param name="c">Third vertex of the triangle.</param>
         private void AddTriangle(Vector3 a, Vector3 b, Vector3 c)
         {
             int vertexIndex = vertices.Count;
@@ -331,55 +291,24 @@
             triangles.Add(vertexIndex);
             triangles.Add(vertexIndex + 1);
             triangles.Add(vertexIndex + 2);
+
+            Vector3 crossProduct = Vector3.Cross(a - b, b - c);
+            normals.Add(crossProduct);
+            normals.Add(crossProduct);
+            normals.Add(crossProduct);
         }
 
-        /// <summary>
-        /// Adds a quad to the current mesh data.
-        /// </summary>
-        /// <param name="a">First vertex of the quad.</param>
-        /// <param name="b">Second vertex of the quad.</param>
-        /// <param name="c">Third vertex of the quad.</param>
-        /// <param name="d">Forth vertex of the quad.</param>
         private void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
         {
-            int vertexIndex = vertices.Count;
-            vertices.Add(a);
-            vertices.Add(b);
-            vertices.Add(c);
-            vertices.Add(d);
-            triangles.Add(vertexIndex);
-            triangles.Add(vertexIndex + 1);
-            triangles.Add(vertexIndex + 2);
-            triangles.Add(vertexIndex);
-            triangles.Add(vertexIndex + 2);
-            triangles.Add(vertexIndex + 3);
+            AddTriangle(a, b, c);
+            AddTriangle(a, c, d);
         }
 
-        /// <summary>
-        /// Adds a pentagon to the current mesh data.
-        /// </summary>
-        /// <param name="a">First vertex of the pentagon.</param>
-        /// <param name="b">Second vertex of the pentagon.</param>
-        /// <param name="c">Third vertex of the pentagon.</param>
-        /// <param name="d">Forth vertex of the pentagon.</param>
-        /// <param name="e">Fifth vertex of the pentagon.</param>
         private void AddPentagon(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 e)
         {
-            int vertexIndex = vertices.Count;
-            vertices.Add(a);
-            vertices.Add(b);
-            vertices.Add(c);
-            vertices.Add(d);
-            vertices.Add(e);
-            triangles.Add(vertexIndex);
-            triangles.Add(vertexIndex + 1);
-            triangles.Add(vertexIndex + 2);
-            triangles.Add(vertexIndex);
-            triangles.Add(vertexIndex + 2);
-            triangles.Add(vertexIndex + 3);
-            triangles.Add(vertexIndex);
-            triangles.Add(vertexIndex + 3);
-            triangles.Add(vertexIndex + 4);
+            AddTriangle(a, b, c);
+            AddTriangle(a, c, d);
+            AddTriangle(a, d, e);
         }
 
         private void SetVoxelColors()
